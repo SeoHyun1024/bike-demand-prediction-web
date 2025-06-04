@@ -23,5 +23,5 @@ pip install --upgrade pip > /dev/null
 pip install flask flask-cors > /dev/null
 
 # Flask 서버 실행
-echo "🚀 서버 실행 중: http://localhost:5000/results"
+echo "🚀 서버 실행 중: http://localhost:5000"
 python backend/app.py
