@@ -1,23 +1,18 @@
-import { useEffect, useState } from "react";
-import ResultsTable from "./components/ResultsTable";
+import { useState } from "react";
+import PredictionForm from "./components/PredictionForm";
 
 function App() {
-  const [results, setResults] = useState([]);
-
-  useEffect(() => {
-    fetch("/api/results")
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => setResults(data))
-      .catch((err) => console.error("❌ fetch 실패:", err));
-  }, []);
+  const [prediction, setPrediction] = useState(null);
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>🚲 바이크 수요 예측 결과</h1>
-      <ResultsTable data={results} />
+      <h1>🚲 자전거 대여 수요 예측기</h1>
+      <PredictionForm onResult={setPrediction} />
+      {prediction !== null && (
+        <p>
+          🔮 예측 대여 수요: <strong>{prediction}</strong> 대
+        </p>
+      )}
     </div>
   );
 }
