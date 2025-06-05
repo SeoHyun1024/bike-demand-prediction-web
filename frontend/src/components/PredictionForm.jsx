@@ -13,13 +13,19 @@ function PredictionForm({ onPrediction }) {
   const [visibility, setVisibility] = useState(2000);
   const [solar, setSolar] = useState(0.3);
   const [dewPoint, setDewPoint] = useState(15.2);
-  const [season, setSeason] = useState("Summer"); // 옵션: Spring, Summer, Autumn, Winter
-  const [holiday, setHoliday] = useState(0); // 0 or 1
+  const [season, setSeason] = useState("Summer");
+  const [holiday, setHoliday] = useState(0);
+
+  // ✅ 날씨 데이터 수신 시 업데이트
+  const handleWeatherFetch = ({ temperature, humidity, windSpeed }) => {
+    setTemperature(temperature);
+    setHumidity(humidity);
+    setWindSpeed(windSpeed);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formattedDate = date.toISOString().slice(0, 10); // yyyy-mm-dd
+    const formattedDate = date.toISOString().slice(0, 10);
 
     const inputData = {
       Date: formattedDate,
@@ -46,13 +52,21 @@ function PredictionForm({ onPrediction }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <DateSelector onDateSelect={setDate} />
+      <DateSelector
+        onDateSelect={setDate}
+        onWeatherFetch={({ temperature, humidity, windSpeed }) => {
+          setTemperature(temperature);
+          setHumidity(humidity);
+          setWindSpeed(windSpeed);
+        }}
+      />
+
       <div>
         시간:{" "}
         <input
           type="number"
           value={hour}
-          onChange={(e) => setHour(Number(e.target.value))}
+          onChange={(e) => setHour(+e.target.value)}
         />
       </div>
       <div>
@@ -60,7 +74,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={temperature}
-          onChange={(e) => setTemperature(Number(e.target.value))}
+          onChange={(e) => setTemperature(+e.target.value)}
         />
       </div>
       <div>
@@ -68,7 +82,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={humidity}
-          onChange={(e) => setHumidity(Number(e.target.value))}
+          onChange={(e) => setHumidity(+e.target.value)}
         />
       </div>
       <div>
@@ -76,7 +90,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={windSpeed}
-          onChange={(e) => setWindSpeed(Number(e.target.value))}
+          onChange={(e) => setWindSpeed(+e.target.value)}
         />
       </div>
       <div>
@@ -84,7 +98,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={visibility}
-          onChange={(e) => setVisibility(Number(e.target.value))}
+          onChange={(e) => setVisibility(+e.target.value)}
         />
       </div>
       <div>
@@ -92,7 +106,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={rainfall}
-          onChange={(e) => setRainfall(Number(e.target.value))}
+          onChange={(e) => setRainfall(+e.target.value)}
         />
       </div>
       <div>
@@ -100,7 +114,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={snowfall}
-          onChange={(e) => setSnowfall(Number(e.target.value))}
+          onChange={(e) => setSnowfall(+e.target.value)}
         />
       </div>
       <div>
@@ -108,7 +122,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={solar}
-          onChange={(e) => setSolar(Number(e.target.value))}
+          onChange={(e) => setSolar(+e.target.value)}
         />
       </div>
       <div>
@@ -116,7 +130,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={dewPoint}
-          onChange={(e) => setDewPoint(Number(e.target.value))}
+          onChange={(e) => setDewPoint(+e.target.value)}
         />
       </div>
       <div>
@@ -130,10 +144,7 @@ function PredictionForm({ onPrediction }) {
       </div>
       <div>
         공휴일:
-        <select
-          value={holiday}
-          onChange={(e) => setHoliday(Number(e.target.value))}
-        >
+        <select value={holiday} onChange={(e) => setHoliday(+e.target.value)}>
           <option value={0}>아니오</option>
           <option value={1}>예</option>
         </select>
