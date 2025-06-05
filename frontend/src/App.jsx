@@ -7,7 +7,7 @@ function App() {
   return (
     <div style={{ padding: "2rem" }}>
       <h1>🚲 자전거 대여 수요 예측기</h1>
-      <PredictionForm onResult={setPrediction} />
+      <PredictionForm onPrediction={setPrediction} />
       {prediction !== null && (
         <p>
           🔮 예측 대여 수요: <strong>{prediction}</strong> 대

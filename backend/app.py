@@ -15,6 +15,12 @@ season_order = ["Spring", "Summer", "Autumn", "Winter"]
 df["Seasons"] = pd.Categorical(df["Seasons"], categories=season_order, ordered=True)
 df["Seasons"] = df["Seasons"].cat.codes
 
+# # 날짜 컬럼 datetime 변환 및 파생 변수 생성
+# df["Date"] = pd.to_datetime(df["Date"])
+# df["month"] = df["Date"].dt.month
+# df["weekday"] = df["Date"].dt.weekday
+
+
 # 3. feature column 정의
 feature_cols = [
     "Hour",
@@ -26,7 +32,6 @@ feature_cols = [
     "Snowfall_cm",
     "Seasons",
     "Holiday",
-    "year",
     "month",
     "weekday",
 ]
@@ -61,11 +66,17 @@ model = grid.best_estimator_
 def predict():
     data = request.get_json()
 
-    # 날짜로부터 파생 변수 생성
+    # 날짜 파생 변수 생성
     dt_obj = datetime.strptime(data["Date"], "%Y-%m-%d")
-    data["year"] = dt_obj.year
     data["month"] = dt_obj.month
     data["weekday"] = dt_obj.weekday()
+
+    # Seasons 인코딩 처리 (문자열 → 정수)
+    season_order = ["Spring", "Summer", "Autumn", "Winter"]
+    season_cat = pd.Categorical(
+        [data["Seasons"]], categories=season_order, ordered=True
+    )
+    season_code = season_cat.codes[0]
 
     # 입력 데이터를 feature 순서에 맞춰 DataFrame으로 구성
     row = pd.DataFrame(
@@ -78,9 +89,8 @@ def predict():
                 "Visibility_10m": data["Visibility"],
                 "Rainfallmm": data["Rainfall"],
                 "Snowfall_cm": data["Snowfall"],
-                "Seasons": data["Seasons"],  # 인코딩된 정수 (0~3)
-                "Holiday": data["Holiday"],  # 0 또는 1
-                "year": data["year"],
+                "Seasons": season_code,  # 인코딩된 정수
+                "Holiday": data["Holiday"],
                 "month": data["month"],
                 "weekday": data["weekday"],
             }
