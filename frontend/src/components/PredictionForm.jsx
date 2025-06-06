@@ -4,7 +4,7 @@ import axios from "axios";
 
 function PredictionForm({ onPrediction }) {
   const [date, setDate] = useState(new Date());
-  const [hour, setHour] = useState(14);
+  const [hour, setHour] = useState(new Date().getHours());
   const [temperature, setTemperature] = useState(23.5);
   const [humidity, setHumidity] = useState(60);
   const [windSpeed, setWindSpeed] = useState(1.8);
@@ -13,13 +13,27 @@ function PredictionForm({ onPrediction }) {
   const [visibility, setVisibility] = useState(2000);
   const [solar, setSolar] = useState(0.3);
   const [dewPoint, setDewPoint] = useState(15.2);
-  const [season, setSeason] = useState("Summer"); // 옵션: Spring, Summer, Autumn, Winter
-  const [holiday, setHoliday] = useState(0); // 0 or 1
+  const [season, setSeason] = useState("Summer");
+  const [holiday, setHoliday] = useState(0);
+
+  const handleWeatherFetch = (weather) => {
+    setTemperature(weather.temperature);
+    setHumidity(weather.humidity);
+    setWindSpeed(weather.windSpeed);
+    setRainfall(weather.rainfall);
+    setSnowfall(weather.snowfall);
+    setVisibility(weather.visibility);
+    setSolar(weather.solar);
+    setDewPoint(weather.dewPoint);
+
+    // 현재 시간으로 hour 설정
+    const now = new Date();
+    setHour(now.getHours());
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formattedDate = date.toISOString().slice(0, 10); // yyyy-mm-dd
+    const formattedDate = date.toISOString().slice(0, 10);
 
     const inputData = {
       Date: formattedDate,
@@ -39,6 +53,8 @@ function PredictionForm({ onPrediction }) {
     try {
       const res = await axios.post("/api/predict", inputData);
       onPrediction(res.data.prediction);
+      console.log("input DATA:", inputData);
+      console.log("예측 결과:", res.data);
     } catch (err) {
       console.error("예측 요청 오류:", err);
     }
@@ -46,13 +62,17 @@ function PredictionForm({ onPrediction }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <DateSelector onDateSelect={setDate} />
+      <DateSelector
+        onDateSelect={setDate}
+        onWeatherFetch={handleWeatherFetch}
+      />
+
       <div>
         시간:{" "}
         <input
           type="number"
           value={hour}
-          onChange={(e) => setHour(Number(e.target.value))}
+          onChange={(e) => setHour(+e.target.value)}
         />
       </div>
       <div>
@@ -60,7 +80,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={temperature}
-          onChange={(e) => setTemperature(Number(e.target.value))}
+          onChange={(e) => setTemperature(+e.target.value)}
         />
       </div>
       <div>
@@ -68,7 +88,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={humidity}
-          onChange={(e) => setHumidity(Number(e.target.value))}
+          onChange={(e) => setHumidity(+e.target.value)}
         />
       </div>
       <div>
@@ -76,7 +96,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={windSpeed}
-          onChange={(e) => setWindSpeed(Number(e.target.value))}
+          onChange={(e) => setWindSpeed(+e.target.value)}
         />
       </div>
       <div>
@@ -84,7 +104,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={visibility}
-          onChange={(e) => setVisibility(Number(e.target.value))}
+          onChange={(e) => setVisibility(+e.target.value)}
         />
       </div>
       <div>
@@ -92,7 +112,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={rainfall}
-          onChange={(e) => setRainfall(Number(e.target.value))}
+          onChange={(e) => setRainfall(+e.target.value)}
         />
       </div>
       <div>
@@ -100,7 +120,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={snowfall}
-          onChange={(e) => setSnowfall(Number(e.target.value))}
+          onChange={(e) => setSnowfall(+e.target.value)}
         />
       </div>
       <div>
@@ -108,7 +128,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={solar}
-          onChange={(e) => setSolar(Number(e.target.value))}
+          onChange={(e) => setSolar(+e.target.value)}
         />
       </div>
       <div>
@@ -116,7 +136,7 @@ function PredictionForm({ onPrediction }) {
         <input
           type="number"
           value={dewPoint}
-          onChange={(e) => setDewPoint(Number(e.target.value))}
+          onChange={(e) => setDewPoint(+e.target.value)}
         />
       </div>
       <div>
@@ -130,10 +150,7 @@ function PredictionForm({ onPrediction }) {
       </div>
       <div>
         공휴일:
-        <select
-          value={holiday}
-          onChange={(e) => setHoliday(Number(e.target.value))}
-        >
+        <select value={holiday} onChange={(e) => setHoliday(+e.target.value)}>
           <option value={0}>아니오</option>
           <option value={1}>예</option>
         </select>
