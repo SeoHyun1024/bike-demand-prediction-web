@@ -140,12 +140,13 @@ function DateSelector({ onDateSelect, onWeatherFetch }) {
 
   return (
     <div style={{ marginBottom: "2rem" }}>
-      <span
+      <h1
+        className="date-selector-title"
         style={{ cursor: "pointer", fontWeight: "bold" }}
         onClick={() => setShowPicker(!showPicker)}
       >
-        📅 {format(selectedDate, "yyyy년 MM월 dd일", { locale: ko })}
-      </span>
+        {format(selectedDate, "yyyy년 MM월 dd일", { locale: ko })}
+      </h1>
       {showPicker && (
         <DatePicker
           selected={selectedDate}

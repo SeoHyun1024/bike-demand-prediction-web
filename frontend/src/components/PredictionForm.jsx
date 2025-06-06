@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DateSelector from "./DateSelector";
 import axios from "axios";
+import "../index.css";
 
 function PredictionForm({ onPrediction }) {
   const [date, setDate] = useState(new Date());
@@ -15,6 +16,7 @@ function PredictionForm({ onPrediction }) {
   const [dewPoint, setDewPoint] = useState(15.2);
   const [season, setSeason] = useState("Summer");
   const [holiday, setHoliday] = useState(0);
+  const [autoFilled, setAutoFilled] = useState(false);
 
   const handleWeatherFetch = (weather) => {
     setTemperature(weather.temperature);
@@ -25,10 +27,9 @@ function PredictionForm({ onPrediction }) {
     setVisibility(weather.visibility);
     setSolar(weather.solar);
     setDewPoint(weather.dewPoint);
-
-    // 현재 시간으로 hour 설정
-    const now = new Date();
-    setHour(now.getHours());
+    setHour(new Date().getHours());
+    setAutoFilled(true);
+    setTimeout(() => setAutoFilled(false), 1500);
   };
 
   const handleSubmit = async (e) => {
@@ -60,102 +61,64 @@ function PredictionForm({ onPrediction }) {
     }
   };
 
+  const inputField = (label, value, setter) => (
+    <div className="input-group">
+      <label>{label}</label>
+      <input
+        className={`weather-input ${autoFilled ? "highlight" : ""}`}
+        type="number"
+        value={value}
+        onChange={(e) => setter(+e.target.value)}
+      />
+    </div>
+  );
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="prediction-form">
       <DateSelector
         onDateSelect={setDate}
         onWeatherFetch={handleWeatherFetch}
       />
 
-      <div>
-        시간:{" "}
-        <input
-          type="number"
-          value={hour}
-          onChange={(e) => setHour(+e.target.value)}
-        />
-      </div>
-      <div>
-        기온:{" "}
-        <input
-          type="number"
-          value={temperature}
-          onChange={(e) => setTemperature(+e.target.value)}
-        />
-      </div>
-      <div>
-        습도:{" "}
-        <input
-          type="number"
-          value={humidity}
-          onChange={(e) => setHumidity(+e.target.value)}
-        />
-      </div>
-      <div>
-        풍속:{" "}
-        <input
-          type="number"
-          value={windSpeed}
-          onChange={(e) => setWindSpeed(+e.target.value)}
-        />
-      </div>
-      <div>
-        가시거리:{" "}
-        <input
-          type="number"
-          value={visibility}
-          onChange={(e) => setVisibility(+e.target.value)}
-        />
-      </div>
-      <div>
-        강수량:{" "}
-        <input
-          type="number"
-          value={rainfall}
-          onChange={(e) => setRainfall(+e.target.value)}
-        />
-      </div>
-      <div>
-        적설량:{" "}
-        <input
-          type="number"
-          value={snowfall}
-          onChange={(e) => setSnowfall(+e.target.value)}
-        />
-      </div>
-      <div>
-        일사량:{" "}
-        <input
-          type="number"
-          value={solar}
-          onChange={(e) => setSolar(+e.target.value)}
-        />
-      </div>
-      <div>
-        이슬점 온도:{" "}
-        <input
-          type="number"
-          value={dewPoint}
-          onChange={(e) => setDewPoint(+e.target.value)}
-        />
-      </div>
-      <div>
-        계절:
-        <select value={season} onChange={(e) => setSeason(e.target.value)}>
+      {inputField("시간", hour, setHour)}
+      {inputField("기온", temperature, setTemperature)}
+      {inputField("습도", humidity, setHumidity)}
+      {inputField("풍속", windSpeed, setWindSpeed)}
+      {inputField("가시거리", visibility, setVisibility)}
+      {inputField("강수량", rainfall, setRainfall)}
+      {inputField("적설량", snowfall, setSnowfall)}
+      {inputField("일사량", solar, setSolar)}
+      {inputField("이슬점 온도", dewPoint, setDewPoint)}
+
+      <div className="input-group">
+        <label>계절</label>
+        <select
+          className="weather-input"
+          value={season}
+          onChange={(e) => setSeason(e.target.value)}
+        >
           <option value="Spring">봄</option>
           <option value="Summer">여름</option>
           <option value="Autumn">가을</option>
           <option value="Winter">겨울</option>
         </select>
       </div>
-      <div>
-        공휴일:
-        <select value={holiday} onChange={(e) => setHoliday(+e.target.value)}>
+
+      <div className="input-group">
+        <label>공휴일</label>
+        <select
+          className="weather-input"
+          value={holiday}
+          onChange={(e) => setHoliday(+e.target.value)}
+        >
           <option value={0}>아니오</option>
           <option value={1}>예</option>
         </select>
       </div>
-      <button type="submit">예측</button>
+
+      <button type="submit" className="submit-button">
+        예측
+      </button>
     </form>
   );
 }

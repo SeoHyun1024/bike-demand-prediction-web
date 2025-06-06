@@ -1,12 +1,21 @@
-// App.jsx
 import { useState } from "react";
+import { motion } from "framer-motion";
 import "./App.css";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import logoGif from "./assets/bike_animation.gif"; // 새로 추가한 GIF
+import bikeLogoAnimation from "./assets/bike_logo.json";
+import Lottie from "lottie-react";
 import PredictionForm from "./components/PredictionForm";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+
+function AnimatedLogo() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8 }}
+    >
+      <Lottie animationData={bikeLogoAnimation} loop={true} />
+    </motion.div>
+  );
+}
 
 function App() {
   const [prediction, setPrediction] = useState(null);
@@ -14,9 +23,28 @@ function App() {
 
   return (
     <div id="root">
-      <div style={{ display: "flex", justifyContent: "center", gap: "2rem" }}>
-        <img src={logoGif} className="logo" alt="Animated Logo" />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "2rem",
+        }}
+      >
+        <AnimatedLogo />
       </div>
+
+      <h1
+        style={{
+          fontSize: "2.5rem",
+          fontWeight: "bold",
+          marginTop: "1rem",
+        }}
+      >
+        자전거 대여 수요를 예측해보세요!
+      </h1>
+      <p style={{ fontSize: "1.1rem", marginBottom: "2rem", color: "#aaa" }}>
+        날씨와 시간에 따라 예측되는 수요를 확인해보세요
+      </p>
 
       <div className="card">
         <PredictionForm
