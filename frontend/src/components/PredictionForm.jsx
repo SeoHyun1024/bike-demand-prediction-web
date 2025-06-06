@@ -4,7 +4,7 @@ import axios from "axios";
 
 function PredictionForm({ onPrediction }) {
   const [date, setDate] = useState(new Date());
-  const [hour, setHour] = useState(14);
+  const [hour, setHour] = useState(new Date().getHours());
   const [temperature, setTemperature] = useState(23.5);
   const [humidity, setHumidity] = useState(60);
   const [windSpeed, setWindSpeed] = useState(1.8);
@@ -16,11 +16,19 @@ function PredictionForm({ onPrediction }) {
   const [season, setSeason] = useState("Summer");
   const [holiday, setHoliday] = useState(0);
 
-  // ✅ 날씨 데이터 수신 시 업데이트
-  const handleWeatherFetch = ({ temperature, humidity, windSpeed }) => {
-    setTemperature(temperature);
-    setHumidity(humidity);
-    setWindSpeed(windSpeed);
+  const handleWeatherFetch = (weather) => {
+    setTemperature(weather.temperature);
+    setHumidity(weather.humidity);
+    setWindSpeed(weather.windSpeed);
+    setRainfall(weather.rainfall);
+    setSnowfall(weather.snowfall);
+    setVisibility(weather.visibility);
+    setSolar(weather.solar);
+    setDewPoint(weather.dewPoint);
+
+    // 현재 시간으로 hour 설정
+    const now = new Date();
+    setHour(now.getHours());
   };
 
   const handleSubmit = async (e) => {
@@ -45,6 +53,8 @@ function PredictionForm({ onPrediction }) {
     try {
       const res = await axios.post("/api/predict", inputData);
       onPrediction(res.data.prediction);
+      console.log("input DATA:", inputData);
+      console.log("예측 결과:", res.data);
     } catch (err) {
       console.error("예측 요청 오류:", err);
     }
@@ -54,11 +64,7 @@ function PredictionForm({ onPrediction }) {
     <form onSubmit={handleSubmit}>
       <DateSelector
         onDateSelect={setDate}
-        onWeatherFetch={({ temperature, humidity, windSpeed }) => {
-          setTemperature(temperature);
-          setHumidity(humidity);
-          setWindSpeed(windSpeed);
-        }}
+        onWeatherFetch={handleWeatherFetch}
       />
 
       <div>

@@ -9,18 +9,16 @@ function DateSelector({ onDateSelect, onWeatherFetch }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [weatherCache, setWeatherCache] = useState({});
-  const [forecastList, setForecastList] = useState([]);
+  const [forecast5, setForecast5] = useState([]);
+  const [forecast16, setForecast16] = useState([]);
   const [location, setLocation] = useState({ lat: null, lon: null });
 
-  // 🌍 컴포넌트 mount 시 현재 위치 가져오기
-  // 1. 위치 설정
+  const VITE_WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLocation({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-        });
+        setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude });
       },
       (err) => {
         console.warn("위치 정보를 가져오지 못했습니다:", err);
@@ -29,33 +27,58 @@ function DateSelector({ onDateSelect, onWeatherFetch }) {
     );
   }, []);
 
-  // 2. 위치가 설정된 후 날씨 가져오기
   useEffect(() => {
     if (location.lat && location.lon) {
-      fetchForecast();
+      fetchForecast5();
+      fetchForecast16();
     }
   }, [location]);
 
-  const fetchForecast = async () => {
+  useEffect(() => {
+    if (forecast5.length > 0 || forecast16.length > 0) {
+      // mount 시점에 오늘 날짜에 해당하는 날씨 가져오기
+      handleChange(new Date());
+    }
+  }, [forecast5, forecast16]);
+
+  const fetchForecast5 = async () => {
     try {
-      const VITE_WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+      const res = await axios.get(
+        "https://api.openweathermap.org/data/2.5/forecast",
+        {
+          params: {
+            lat: location.lat,
+            lon: location.lon,
+            units: "metric",
+            appid: VITE_WEATHER_API_KEY,
+          },
+        }
+      );
+      console.log("5일 예보 데이터:", res.data);
+      setForecast5(res.data.list);
+    } catch (err) {
+      console.error("5일 예보 API 요청 실패:", err);
+    }
+  };
+
+  const fetchForecast16 = async () => {
+    try {
       const res = await axios.get(
         "https://api.openweathermap.org/data/2.5/forecast/daily",
         {
           params: {
-            lat: location.lat || 37.5665, // 기본값: 서울
-            lon: location.lon || 126.978,
+            lat: location.lat,
+            lon: location.lon,
             cnt: 16,
             units: "metric",
             appid: VITE_WEATHER_API_KEY,
           },
         }
       );
-      console.log("📡 날씨 API 응답:", res.data); // ← 콘솔 출력 추가
-
-      setForecastList(res.data.list);
+      console.log("16일 예보 데이터:", res.data);
+      setForecast16(res.data.list);
     } catch (err) {
-      console.error("날씨 API 요청 실패:", err);
+      console.error("16일 예보 API 요청 실패:", err);
     }
   };
 
@@ -66,18 +89,45 @@ function DateSelector({ onDateSelect, onWeatherFetch }) {
 
     const key = format(date, "yyyy-MM-dd");
     if (weatherCache[key]) {
-      onWeatherFetch(weatherCache[key]); // 캐시 사용
-    } else {
-      const daysDiff = Math.floor(
-        (date.setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) /
-          (1000 * 60 * 60 * 24)
+      onWeatherFetch(weatherCache[key]);
+      return;
+    }
+
+    const today = new Date();
+    const daysDiff = Math.floor(
+      (date.setHours(0, 0, 0, 0) - today.setHours(0, 0, 0, 0)) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    if (daysDiff <= 5) {
+      const targetDateStr = format(date, "yyyy-MM-dd");
+      const entry = forecast5.find((item) =>
+        item.dt_txt?.includes(targetDateStr)
       );
-      const data = forecastList[daysDiff];
+      if (entry) {
+        const weather = {
+          temperature: entry.main.temp,
+          humidity: entry.main.humidity,
+          windSpeed: entry.wind.speed,
+          visibility: entry.visibility ?? 0,
+          solar: entry.solarRadiation ?? 0, // placeholder, API does not provide this directly
+          dewPoint: entry.main.temp - (100 - entry.main.humidity) / 5,
+          rainfall: entry.rain?.["3h"] ?? 0,
+          snowfall: entry.snow?.["3h"] ?? 0,
+        };
+        setWeatherCache((prev) => ({ ...prev, [key]: weather }));
+        onWeatherFetch(weather);
+      }
+    } else {
+      const data = forecast16[daysDiff];
       if (data) {
         const weather = {
           temperature: data.temp.day,
           humidity: data.humidity,
           windSpeed: data.speed,
+          visibility: data.visibility ?? 0, // not typically present
+          solar: data.solarRadiation ?? 0, // placeholder
+          dewPoint: data.temp.day - (100 - data.humidity) / 5,
           rainfall: data.rain ?? 0,
           snowfall: data.snow ?? 0,
         };
