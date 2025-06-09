@@ -85,7 +85,6 @@ function DateSelector({ onDateSelect, onWeatherFetch }) {
 
   const handleChange = (date) => {
     setSelectedDate(date);
-    setShowPicker(false);
     onDateSelect(date);
 
     const key = format(date, "yyyy-MM-dd");
@@ -115,6 +114,8 @@ function DateSelector({ onDateSelect, onWeatherFetch }) {
           dewPoint: entry.main.temp - (100 - entry.main.humidity) / 5,
           rainfall: entry.rain?.["3h"] ?? 0,
           snowfall: entry.snow?.["3h"] ?? 0,
+          weatherCondition: entry.weather[0].main,
+          weatherIcon: entry.weather[0].icon,
         };
         setWeatherCache((prev) => ({ ...prev, [key]: weather }));
         onWeatherFetch(weather);
@@ -131,6 +132,8 @@ function DateSelector({ onDateSelect, onWeatherFetch }) {
           dewPoint: data.temp.day - (100 - data.humidity) / 5,
           rainfall: data.rain ?? 0,
           snowfall: data.snow ?? 0,
+          weatherCondition: data.weather[0].main,
+          weatherIcon: data.weather[0].icon,
         };
         setWeatherCache((prev) => ({ ...prev, [key]: weather }));
         onWeatherFetch(weather);
@@ -140,22 +143,13 @@ function DateSelector({ onDateSelect, onWeatherFetch }) {
 
   return (
     <div style={{ marginBottom: "2rem" }}>
-      <h1
-        className="date-selector-title"
-        style={{ cursor: "pointer", fontWeight: "bold" }}
-        onClick={() => setShowPicker(!showPicker)}
-      >
-        {format(selectedDate, "yyyy년 MM월 dd일", { locale: ko })}
-      </h1>
-      {showPicker && (
-        <DatePicker
-          selected={selectedDate}
-          onChange={handleChange}
-          locale={ko}
-          dateFormat="yyyy년 MM월 dd일"
-          inline
-        />
-      )}
+      <DatePicker
+        selected={selectedDate}
+        onChange={handleChange}
+        locale={ko}
+        dateFormat="yyyy년 MM월 dd일"
+        inline
+      />
     </div>
   );
 }
